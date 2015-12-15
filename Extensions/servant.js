@@ -732,7 +732,8 @@ XKit.extensions.servant = new Object({
 
 				try {
 					/* jshint evil: true */
-					m_return = eval(parameter + "\n//# sourceURL=xkit/servant/servant"+(new Date()).getTime()+".js");
+					alert('Sorry, eval usage has been removed for Firefox support');
+					// m_return = eval(parameter + "\n//# sourceURL=xkit/servant/servant"+(new Date()).getTime()+".js");
 				} catch(e) {
 					m_return = false;
 					console.log("Unable to run Servant! ---> " + e.message);
@@ -1142,14 +1143,16 @@ XKit.extensions.servant = new Object({
 					var to_run = function() {
 						post = m_post;
 						/* jshint evil: true */
-						eval(parameter_fixed + "\n//# sourceURL=xkit/servant/servant"+(new Date()).getTime()+".js");
+						alert('Sorry, eval usage has been removed for Firefox support');
+						// eval(parameter_fixed + "\n//# sourceURL=xkit/servant/servant"+(new Date()).getTime()+".js");
 					};
 					to_run();
 
 				} else {
 
 					/* jshint evil: true */
-					eval(parameter_fixed + "\n//# sourceURL=xkit/servant/servant"+(new Date()).getTime()+".js");
+					alert('Sorry, eval usage has been removed for Firefox support');
+					// eval(parameter_fixed + "\n//# sourceURL=xkit/servant/servant"+(new Date()).getTime()+".js");
 
 				}
 

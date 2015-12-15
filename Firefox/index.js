@@ -13,6 +13,7 @@ let scripts = [
   'xkit/xkit.js',
   'xkit/editor.js',
   'storage.js',
+  'xkit/all.js',
   'bootstrap.js'
 ].map(function(url) {
   return self.data.url(url);

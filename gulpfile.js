@@ -2,6 +2,7 @@
 'use strict';
 
 var cache = require('gulp-cached'),
+	concat = require('gulp-concat'),
 	connect = require('connect'),
 	connectLogger = require('morgan'),
 	connectStatic = require('serve-static'),
@@ -124,7 +125,14 @@ gulp.task('compress:chrome', ['copy:chrome'], function() {
 		.pipe(gulp.dest(BUILD_DIR + '/chrome'));
 });
 
-gulp.task('copy:firefox', ['clean:firefox', 'lint'], function() {
+gulp.task('concat:firefox', function() {
+	var src = paths.scripts.extensions;
+	return gulp.src(src)
+		.pipe(concat('all.js'))
+	    .pipe(gulp.dest(BUILD_DIR + '/firefox/data/xkit'));
+});
+
+gulp.task('copy:firefox', ['clean:firefox', 'lint', 'concat:firefox'], function() {
 	var src = [].concat(
 		paths.scripts.core,
 		paths.css.core,
