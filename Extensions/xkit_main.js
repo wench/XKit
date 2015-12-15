@@ -105,9 +105,6 @@ XKit.extensions.xkit_main = new Object({
 
 		// Check if in Frame Mode.
 		if (XKit.frame_mode === true && extension_id !== "xkit_patches") {
-			// This is ugly: I don't want to eval script.
-			/* jshint evil: true */
-			eval(xkit_main.script + "\n//# sourceURL=xkit/"+extension_id+".js");
 			var frame_script = "";
 			try {
 				frame_script = XKit.extensions[extension_id].frame_run;
@@ -147,12 +144,6 @@ XKit.extensions.xkit_main = new Object({
 			}
 		} else {
 			if (xkit_main.frame === true) {
-				// is a frame extension, quit.
-				try {
-					eval(xkit_main.script + "\n//# sourceURL=xkit/"+extension_id+".js");
-				} catch(e) {
-					XKit.console.add("Can't eval " + extension_id);
-				}
 				if (XKit.extensions.xkit_main.disabled_extensions === "") {
 					XKit.extensions.xkit_main.disabled_extensions = extension_id + "(not in frame)";
 				} else {
@@ -166,7 +157,6 @@ XKit.extensions.xkit_main = new Object({
 		}
 
 		try {
-			eval(xkit_main.script + "\n//# sourceURL=xkit/"+extension_id+".js");
 			if (XKit.installed.enabled(extension_id) === true) {
 				if (XKit.extensions.xkit_main.enabled_extensions === "") {
 					XKit.extensions.xkit_main.enabled_extensions = extension_id;
