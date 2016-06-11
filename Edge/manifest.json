@@ -9,6 +9,7 @@
    } ],
    "description": "A fork of XKit, the extension framework for Tumblr.",
    "homepage_url": "https://github.com/new-xkit/XKit",
+   "author": "New XKit",
    "icons": {
       "128": "icon.png"
    },
