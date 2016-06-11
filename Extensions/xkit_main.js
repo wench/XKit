@@ -56,7 +56,7 @@ XKit.extensions.xkit_main = new Object({
 			});
 		} else {
 			XKit.console.add("XKit Main: Fast-boot mode");
-			setTimeout(function() { XKit.extensions.xkit_main.run_next_extension(); }, 1);
+			setTimeout(function() { setImmediate(function() { XKit.extensions.xkit_main.run_next_extension(); }); }, 1);
 		}
 
 	},

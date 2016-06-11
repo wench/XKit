@@ -175,12 +175,29 @@ XKit.tools.get_blogs = function() {
 	// Approach 2: Scrape from the dynamically-created popover element.
 
 	if (!$("[data-js-channel-list]").length) {
-		// create the popover element
-		var account_menu = $("#account_button");
-		account_menu.click();
-		setTimeout(function(){
-			account_menu.click();
-		},10);
+		// create the popover element, but only do it once
+		var account_button = $("#account_button");
+		if (!account_button.data("xkit_tools_get_blogs_has_clicked")) {
+			account_button.data("xkit_tools_get_blogs_has_clicked",true);
+			account_button.click();
+			
+			// Add some css to hide the popover as it appears
+			XKit.tools.add_css(".popover--account-popover .popover { visibility: hidden; }\n#account_button .tab_anchor { opacity:0.5;}","xkit_tools_get_blogs_account_popover_hide");
+			var fallback = setTimeout(function(){ XKit.tools.remove_css("xkit_tools_get_blogs_account_popover_hide");},3000);
+			
+			// Wait for the popover to appear and dismiss it and undo our css changes
+			var wait_for_popover = function(){
+				if ($(".popover--account-popover .popover.popover--active").length) {
+					account_button.click();
+					setTimeout(function(){ XKit.tools.remove_css("xkit_tools_get_blogs_account_popover_hide");},200);
+					clearTimeout(fallback);
+					XKit.tools.get_blogs(); // Call back to our self so we can cache the blog list now the account popover has been populated
+				} else {
+					setTimeout(wait_for_popover,50);
+				}
+			};
+			setTimeout(wait_for_popover,50);
+		}
 	}
 
 	var blog_menu_items = $("[data-js-channel-list] .popover_menu_item_blog");
