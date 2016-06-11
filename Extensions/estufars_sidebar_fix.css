@@ -1,3 +1,7 @@
+.popover--account-popover {
+	display: none;
+}
+
 .right_column:after {
 	background: none!important;
 }
@@ -113,19 +117,19 @@
 }
 
 .right_column .popover_menu_item_anchor_icon.like-icon::before {
-    content: "";
+	content: "\EA4F";
 }
 
 .right_column .popover_menu_item_anchor_icon.following-icon::before {
-    content: "";
+	content: "\EA44";
 }
 
 .right_column .popover_menu_item_anchor_icon.settings-icon::before {
-    content: "";
+	content: "\EA9B";
 }
 
 .right_column .popover_menu_item_anchor_icon.help-icon::before {
-    content: "";
+	content: "\EA4B";
 }
 
 .right_column .tx-scroll {
@@ -139,10 +143,3 @@
 .right_column .popover_menu+#dashboard_controls_open_blog {
 	display: none;
 }
-
-/* activity line is grey, use blend modes to match blue of other menu items */
-/* nevermind, chrome has a bug that causes the message dropdown to disappear? */
-/*.right_column .blog-sub-nav-item-data.sparkline {
-	mix-blend-mode: screen;
-	opacity: 0.6;
-}*/

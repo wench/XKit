@@ -1,5 +1,5 @@
 //* TITLE Blacklist **//
-//* VERSION 2.7.8 **//
+//* VERSION 2.9.0 **//
 //* DESCRIPTION Clean your dash **//
 //* DETAILS This extension allows you to block posts based on the words you specify. If a post has the text you've written in the post itself or it's tags, it will be replaced by a warning, or won't be shown on your dashboard, depending on your settings. **//
 //* DEVELOPER new-xkit **//
@@ -105,6 +105,12 @@ XKit.extensions.blacklist = new Object({
 			default: false,
 			value: false
 		},
+		"hide_by_default": {
+			text: "Hide newly loaded posts until Blacklist makes sure they aren't blocked",
+			default: false,
+			value: false,
+			experimental: true
+		},
 		"sep3": {
 			text: "Blacklisted Words",
 			type: "separator"
@@ -166,6 +172,18 @@ XKit.extensions.blacklist = new Object({
 
 			XKit.tools.add_css(mini_ui, "xkit_blacklist_mini_ui");
 
+		}
+
+		if (this.preferences.hide_by_default.value) {
+			// Set opacity of all post content to 0, upon Blacklist's
+			// completion set it back to 1
+			XKit.tools.add_css(
+				".post_content { opacity: 0; }" +
+				".post.xblacklist-done .post_content { opacity: 1; }" +
+				".post .post_header::after { content: \"Hidden by Blacklist\"; }" +
+				".post.xblacklist-done .post_header::after { content: \"\"; }",
+				"xkit_blacklist_hide_by_default"
+			);
 		}
 
 		if ($(".posts .post").length > 0) {
@@ -533,6 +551,12 @@ XKit.extensions.blacklist = new Object({
 					m_content = $(this).find(".post_body").html();
 				}
 
+				// Link buttons (link post's content) live inside a .post_media
+				// which can coexist with a .post_body.
+				if ($(this).find(".post_media").length > 0) {
+					m_content += " " + $(this).find(".post_media").html();
+				}
+
 				if ($(this).find(".caption").length > 0) {
 					m_content = $(this).find(".caption").html();
 				}
@@ -552,6 +576,8 @@ XKit.extensions.blacklist = new Object({
 				m_content = XKit.tools.replace_all(m_content, "&nbsp;", " ");
 				m_content = m_content.toLowerCase();
 
+			    // Preserve href links.
+			    m_content = m_content.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)".*?>/gm, ' $1 ');
 				// Strip HTML tags.
 				m_content = m_content.replace(/<(?:.|\n)*?>/gm, ' ');
 
@@ -942,6 +968,7 @@ XKit.extensions.blacklist = new Object({
 			$(".xblacklist_blacklisted_post").removeClass("xblacklist_blacklisted_post");
 		}, 500);
 		XKit.tools.remove_css("xkit_blacklist_mini_ui");
+		XKit.tools.remove_css("xkit_blacklist_hide_by_default");
 		XKit.tools.remove_css("blacklist");
 	},
 

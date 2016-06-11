@@ -1,5 +1,5 @@
 //* TITLE Pokés **//
-//* VERSION 0.8.0 **//
+//* VERSION 0.10.1 **//
 //* DESCRIPTION Gotta catch them all! **//
 //* DETAILS Randomly spawns Pokémon on your dash for you to collect. **//
 //* DEVELOPER new-xkit **//
@@ -12,14 +12,28 @@ XKit.extensions.pokes = {
 	pokedex_url: "https://new-xkit.github.io/XKit/Extensions/dist/page/pokedex.json",
 
 	preferences: {
+		"allow_fullwidth": {
+			text: "Allow spawning across the entire width of the page",
+			default: "true",
+			value: "true"
+		},
+		"sep0": {
+			text: "Backgrounds",
+			type: "separator"
+		},
 		"catch_backgrounds": {
 			text: "Give Pokémon a background (for visibility)",
 			default: false,
 			value: false
 		},
+		"transp_background": {
+			text: "Transparent Backgrounds",
+			default: "true",
+			value: "true"
+		},
 		"pokes_menu_header": {
 			text: "Menu",
-			type: "separator",
+			type: "separator"
 		},
 	},
 
@@ -73,6 +87,10 @@ XKit.extensions.pokes = {
 		});
 	},
 
+	randomInt: function(min, max) {
+		return Math.floor(Math.random() * (max - min + 1) + min);
+	},
+
 	parse_pokemon: function(mdata, db_nr, pokedThing) {
 		var poke_name = mdata[db_nr].name;
 		var poke_sprite = mdata[db_nr].sprite;
@@ -102,13 +120,26 @@ XKit.extensions.pokes = {
 		var rarityPicker = Math.floor(Math.random() * 255);
 		if (rarityPicker >= 0 && rarityPicker <= rarity) {
 			var poke_html;
+			var poke_class;
+			var xpos = XKit.extensions.pokes.randomInt(-($(window).width()/3), ($(window).width()/2)-100);
+			var ypos = XKit.extensions.pokes.randomInt(0, 600);
+
 			if (XKit.extensions.pokes.preferences.catch_backgrounds.value) {
-				poke_html = '<div class="poke poke_background' + shiny_class + '" data-pokeid="' + db_nr + '" data-pokename="' + poke_name + '" data-pokegender="' + poke_gender + '">' +
+				if (XKit.extensions.pokes.preferences.transp_background.value) {
+					poke_class = "poke_bg_transp";
+				} else {
+					poke_class = "poke_bg";
+				}
+			}
+			
+			if (XKit.extensions.pokes.preferences.allow_fullwidth.value) {
+				poke_html = '<div class="poke ' + poke_class + shiny_class + '" data-pokeid="' + db_nr + '" data-pokename="' + poke_name + '" data-pokegender="' + poke_gender + '" style="left:' + xpos + 'px; margin-top:' + ypos + 'px;">' +
 				'<img src="'+poke_sprite+'" alt="'+poke_name+'"/>'+'</div>';
 			} else {
-				poke_html = '<div class="poke' + shiny_class + '" data-pokeid="' + db_nr + '" data-pokename="' + poke_name + '" data-pokegender="' + poke_gender + '">' +
+				poke_html = '<div class="poke fixed ' + poke_class + shiny_class + '" data-pokeid="' + db_nr + '" data-pokename="' + poke_name + '" data-pokegender="' + poke_gender + '" style="margin-top:' + ypos + 'px;">' +
 				'<img src="'+poke_sprite+'" alt="'+poke_name+'"/>'+'</div>';
 			}
+
 			pokedThing.after(poke_html);
 			pokedThing.parent().find(".poke").click(function(event) {
 				if (XKit.storage.get("pokes","pokemon_storage","") === "") {
@@ -213,6 +244,16 @@ XKit.extensions.pokes = {
 		var m_html =
 			'<div class="xkit-pokes-lightbox" style="opacity: 0">' +
 			'<div class="xkit-pokes-pc">' +
+					'<div class="xkit-pokes-pc-sorter">' +
+              '<input type="radio" name="xkit-pokes-sort" class="xkit-pokes-sorter" id="chronological" title="Order of capture" checked="checked"></input>'+
+              '<label for="chronological"></label>'+
+              '<input type="radio" name="xkit-pokes-sort" class="xkit-pokes-sorter" id="alphabetical" title="Name"></input>'+
+              '<label for="alphabetical"></label>'+
+              '<input type="radio" name="xkit-pokes-sort" class="xkit-pokes-sorter" id="pokeid" title="Pokédex # ordering"></input>'+
+              '<label for="pokeid"></label>'+
+              '<input type="checkbox" class="xkit-pokes-sorter" id="reverse-toggle"></input>'+
+              '<label for="reverse-toggle"></label>'+
+					'</div>' +
 				'<div class="xkit-pokes-pc-info">' +
 					'<div class="gender"></div>' +
 					'<div class="nickname"></div>' +
@@ -240,6 +281,30 @@ XKit.extensions.pokes = {
 				}
 			});
 		});
+
+		var sortFunction = function(dataAttr, optData) {
+			var up = ($('input.xkit-pokes-sorter#reverse-toggle').is(":checked") ? -1 : 1);
+			return function(a, b) {
+				return ($(b).data(dataAttr) || $(b).data(optData)) < ($(a).data(dataAttr) || $(a).data(optData)) ? up : -up;
+			};
+		};
+
+		$('input:radio[name="xkit-pokes-sort"]#pokeid').change(function(e){
+						$("#xkit-loading_pokemon div.caught").sort(sortFunction("pokeid", "pokeid"))
+									.prependTo("#xkit-loading_pokemon");
+		});
+				$('input:radio[name="xkit-pokes-sort"]#alphabetical').change(function(e){
+				$("#xkit-loading_pokemon div.caught").sort(sortFunction("pokenick", "pokespecies"))
+									.prependTo("#xkit-loading_pokemon");
+		});
+		$('input:radio[name="xkit-pokes-sort"]#chronological').change(function(e){
+				$("#xkit-loading_pokemon div.caught").sort(sortFunction('array_index', 'array_index'))
+									.prependTo("#xkit-loading_pokemon");
+		});
+		$('.xkit-pokes-sorter#reverse-toggle').change(function(e){
+				 $("#xkit-loading_pokemon div.caught").sort(function(e) {return 1;}).prependTo("#xkit-loading_pokemon");
+		});
+
 		$(".xkit-pokes-lightbox").animate({
 			opacity: 1
 		});
@@ -302,7 +367,7 @@ XKit.extensions.pokes = {
 				if (value.shiny) {
 					sprite = mdata[value.id].sprite_shiny || mdata[value.id].sprite;
 				}
-				m_html = m_html + "<div class='caught" + (value.shiny ? " pokes_shiny" : "") + "' data-pokegender='" + value.gender + "' data-pokespecies='" + mdata[value.id].name + "' data-pokenick='" + (value.nickname || "") + "' data-array_index=" + index + "><img class='caught poke_sprite' src='" + sprite + "'></div>";
+				m_html = m_html + "<div class='caught" + (value.shiny ? " pokes_shiny" : "") + "' data-pokeid='" + value.id + "' data-pokegender='" + value.gender + "' data-pokespecies='" + mdata[value.id].name + "' data-pokenick='" + (value.nickname || "") + "' data-array_index=" + index + "><img class='caught poke_sprite' src='" + sprite + "' /></div>";
 				if (checklist.indexOf(value.id) === -1) checklist.push(value.id);
 			});
 			header += checklist.length + " out of " + mdata.length + " different species of Pokémon!</p>";
