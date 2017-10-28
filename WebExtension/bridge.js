@@ -7,25 +7,35 @@
 
 */
 
+/* globals chrome, browser, msBrowser */
+
+if (typeof(browser) === 'undefined') {
+	if (typeof(chrome) !== 'undefined') {
+		browser = chrome; // eslint-disable-line no-global-assign
+	} else if (typeof(msBrowser) !== 'undefined') {
+		browser = msBrowser; // eslint-disable-line no-global-assign
+	}
+}
+
 var bridge_error = false;
 var bridge_error_object;
 var xkit_storage = {};
 var bridge_ver = "2.1";
 
 try {
-	var storage = chrome.storage.local;
+	var storage = browser.storage.local;
 	var storage_loaded = false;
 	var framework_version = getVersion();
-	var storage_used = -1;
+	var storage_used = 0;
 	var storage_max = -1;
 	init_bridge();
-} catch(e) {
+} catch (e) {
 	console.log("[XKIT] Caught bridge error: " + e.message);
 	bridge_error_object = e;
 	bridge_error = true;
 	try {
 		call_xkit();
-	} catch(em) {
+	} catch (em) {
 		alert("Fatal XKit Error:\n" + em.message + "\n\nPlease go to new-xkit-extension.tumblr.com for support.");
 		console.log("[XKIT] Caught bridge error: " + em.message);
 	}
@@ -39,16 +49,15 @@ function getBridgeError() {
 }
 
 function getVersion() {
-	var version = 'NaN';
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', chrome.extension.getURL('manifest.json'), false);
+	xhr.open('GET', browser.extension.getURL('manifest.json'), false);
 	xhr.send(null);
 	var manifest = JSON.parse(xhr.responseText);
 	return manifest.version;
 }
 
 function call_xkit() {
-	if(typeof XKit !== "undefined") {
+	if (typeof XKit !== "undefined") {
 		XKit.init();
 	} else {
 		setTimeout(function() { call_xkit(); }, 1);
@@ -57,49 +66,61 @@ function call_xkit() {
 
 function init_bridge() {
 
+	var last_error = "";
+
 	console.log("[XKit Bridge] Hello from Bridge " + bridge_ver);
 	console.log("[XKit Bridge] Retrieving storage..");
 
 	try {
 
-	storage.get(function(items) {
+		storage.get(function(items) {
 
-		last_error = "";
+			if (browser.runtime.lastError) {
+				last_error = browser.runtime.lastError.message;
+				console.log("storage.get error: " + last_error);
+			}
 
-		if (typeof chrome.runtime.lastError !== "undefined") {
-			last_error = chrome.runtime.lastError.message;
-			console.log("storage.get error: " + last_error);
-		}
+			if (last_error !== "") {
 
-		if (last_error !== "") {
-
-			XKit.window.show("Corrupt storage","XKit noticed that your browser's storage area allocated for XKit is corrupt and will now reset itself and clear the storage area so it can save it data and function properly.<br/><br/><b>Your browser returned the following error message:</b><br/>\"" + last_error + "\"<br/><br/>If you keep seeing this message, it means your Chrome's profile file is corrupt, please click on the button below for more information and learn how to fix it.", "error","<div class=\"xkit-button default\" id=\"xkit-bridge-reset-and-continue\">OK</div><a href=\"http://xkit-extension.tumblr.com/post/52742121604/chrome-system-restores-corrupt-profile-settings-and\" class=\"xkit-button\">Didn't fix your problem?</a>");
-			$("#xkit-bridge-reset-and-continue").click(function() {
-				GM_flushStorage(function() {
-					init_bridge();
+				XKit.window.show("Corrupt storage", "XKit noticed that your browser's storage area allocated for XKit is corrupt and will now reset itself and clear the storage area so it can save it data and function properly.<br/><br/><b>Your browser returned the following error message:</b><br/>\"" + last_error + "\"<br/><br/>If you keep seeing this message, it means your browser's profile file is corrupt, please try uninstalling and reinstalling New XKit", "error",  "<div class=\"xkit-button default\" id=\"xkit-bridge-reset-and-continue\">OK</div>");
+				$("#xkit-bridge-reset-and-continue").click(function() {
+					GM_flushStorage(function() {
+						init_bridge();
+					});
 				});
-			});
-			return;
-		}
-		for (var key in items) {
-			xkit_storage[key] = items[key];
-		}
-		storage_loaded = true;
-		console.log("[XKit Bridge] Storage loaded, calling XKit.. bye!");
+				return;
+			}
+			if (typeof(chrome) === 'undefined') {
+				if (!items.isProperlyMigrated) {
+					XKit.window.show("Storage migration in progress", "XKit is still busy migrating your preferences from the old storage system to the new one. Please check back in a couple seconds by refreshing the page.", "warning",  "<div class=\"xkit-button default\" id=\"xkit-bridge-refresh\">Refresh</div>");
+					$("#xkit-bridge-refresh").click(function() {
+						window.location = window.location;
+					});
+					return;
+				}
 
-		storage.getBytesInUse(function(bytes) {
-			storage_used = bytes;
-			storage_max = -1;
-			call_xkit();
+			}
+			for (var key in items) {
+				xkit_storage[key] = items[key];
+			}
+			storage_loaded = true;
+			console.log("[XKit Bridge] Storage loaded, calling XKit.. bye!");
+
+			if (storage.getBytesInUse) {
+				storage.getBytesInUse(function(bytes) {
+					storage_used = bytes;
+					storage_max = -1;
+					call_xkit();
+				});
+			} else {
+				call_xkit();
+			}
+
 		});
 
+	} catch (e) {
+		XKit.window.show("Corrupt storage", "XKit noticed that your browser's storage area allocated for XKit is corrupt and will now reset itself and clear the storage area so it can save it data and function properly.<br/><br/><b>Your browser returned the following error message:</b><br/>\"" + last_error + "\"<br/><br/>If you keep seeing this message, it means your browser's profile file is corrupt, please try uninstalling and reinstalling New XKit", "error",  "<div class=\"xkit-button default\" id=\"xkit-bridge-reset-and-continue\">OK</div>");
 
-
-	});
-
-	} catch(e) {
-
-		XKit.window.show("Corrupt storage","XKit noticed that your browser's storage area allocated for XKit is corrupt and will now reset itself and clear the storage area so it can save it data and function properly.<br/><br/><b>Your browser returned the following error message:</b><br/>\"" + last_error + "\"<br/><br/>If you keep seeing this message, it means your Chrome's profile file is corrupt, please click on the button below for more information and learn how to fix it.", "error","<div class=\"xkit-button default\" id=\"xkit-bridge-reset-and-continue\">OK</div><a href=\"http://xkit-extension.tumblr.com/post/52742121604/chrome-system-restores-corrupt-profile-settings-and\" class=\"xkit-button\">Didn't fix your problem?</a>");
 		$("#xkit-bridge-reset-and-continue").click(function() {
 			GM_flushStorage(function() {
 				init_bridge();
@@ -114,7 +135,10 @@ function GM_flushStorage(callback) {
 
 	storage.remove("xkit_something", function() {
 		storage.clear(function(items) {
-			var last_error = chrome.runtime.lastError.message;
+			var last_error = 'unknown error';
+			if (browser.runtime.lastError) {
+				last_error = browser.runtime.lastError.message;
+			}
 			console.log("storage.clear error: " + last_error);
 			callback();
 		});
@@ -168,13 +192,13 @@ function GM_setValue(name, value) {
 
 function GM_log(message) {
 
-    console.log(message);
+	console.log(message);
 
 }
 
 function GM_openInTab(url) {
 
-    return window.open(url, "_blank");
+	return window.open(url, "_blank");
 
 }
 
@@ -192,7 +216,7 @@ function GM_listValues() {
 			}
 		}
 		return list;
-	} catch(e) {
+	} catch (e) {
 		return "";
 	}
 
@@ -209,23 +233,23 @@ function GM_xmlhttpRequest(settings) {
 
 			try {
 				console.log(" -- Bridge forwarding to HTTPS!");
-				settings.url = settings.url.replace("http://","https://");
+				settings.url = settings.url.replace("http://", "https://");
 				timeout = 1;
-			} catch(e) {
+			} catch (e) {
 				console.log(" -- Bridge forwarding to HTTPS FAIL..!");
 			}
 
 		}
 
-		settings.url = settings.url.replace("http://api.tumblr.com","https://api.tumblr.com");
+		settings.url = settings.url.replace("http://api.tumblr.com", "https://api.tumblr.com");
 
 		if (settings.url.indexOf("http://www.tumblr.com/") === 0) {
 
 			try {
 				console.log(" -- Bridge forwarding to HTTPS! (Dashboard)");
-				settings.url = settings.url.replace("http://","https://");
+				settings.url = settings.url.replace("http://", "https://");
 				timeout = 1;
-			} catch(e) {
+			} catch (e) {
 				console.log(" -- Bridge forwarding to HTTPS FAIL..!");
 			}
 
@@ -239,15 +263,15 @@ function GM_xmlhttpRequest(settings) {
 				request.open('GET', settings.url, true);
 			}
 
-			request.onreadystatechange = function (oEvent) {
+			request.onreadystatechange = function(oEvent) {
 				if (request.readyState === 4) {
 					if (request.status === 200) {
 						if (typeof settings.onload !== "undefined") {
-								settings.onload.call(request, request);
+							settings.onload.call(request, request);
 						}
 					} else {
 						if (typeof settings.onerror !== "undefined") {
-								settings.onerror.call(request, request);
+							settings.onerror.call(request, request);
 						}
 					}
 				}
@@ -274,7 +298,7 @@ function GM_xmlhttpRequest(settings) {
 
 		}, timeout);
 
-	} catch(e) {
+	} catch (e) {
 		console.log("Bridge can not make request: " + e.message);
 	}
 

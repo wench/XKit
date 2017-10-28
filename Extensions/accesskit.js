@@ -1,5 +1,5 @@
 //* TITLE AccessKit **//
-//* VERSION 1.2.0 **//
+//* VERSION 1.2.4 **//
 //* DESCRIPTION Accessibility tools for Tumblr **//
 //* DETAILS Provides accessibility tools for XKit and your dashboard, such as increased font sizes, more contrast on icons and more. **//
 //* DEVELOPER new-xkit **//
@@ -84,19 +84,19 @@ XKit.extensions.accesskit = new Object({
 			type: "separator"
 		},
 		invert: {
-			text: "Invert colors (Chrome/Safari only, may cause slowness/problems)",
+			text: "Invert colors (May cause slowness/problems)",
 			default: false,
 			value: false,
 			experimental: true
 		},
 		grayscale: {
-			text: "Use grayscale colors (Chrome/Safari only, may cause slowness/problems)",
+			text: "Use grayscale colors (May cause slowness/problems)",
 			default: false,
 			value: false,
 			experimental: true
 		},
 		contrast: {
-			text: "Increase overall contrast (Chrome/Safari only, may cause slowness/problems)",
+			text: "Increase overall contrast (May cause slowness/problems)",
 			default: false,
 			value: false,
 			experimental: true
@@ -153,7 +153,7 @@ XKit.extensions.accesskit = new Object({
 
 		if (m_filters !== "") {
 
-			m_css = m_css + " html { -webkit-filter: " + m_filters + "; } ";
+			m_css = m_css + "html {height: 100%; } body { height: 100%; filter: " + m_filters + "; } ";
 
 		}
 
@@ -296,6 +296,10 @@ XKit.extensions.accesskit = new Object({
 					" .xkit-window-buttons { border-top: 1px solid black; } ";
 		}
 
+		if (XKit.interface.where().inbox) {
+			m_css += ".post_full.is_note.no_body .post_footer { margin: 0; }";
+		}
+
 		XKit.tools.add_css(m_css, "accesskit");
 
 	},
@@ -311,20 +315,20 @@ XKit.extensions.accesskit = new Object({
 		var imgWidth = '';
 		var rowHeight = '';
 
-		$('.photoset_row').each(function () {
+		$('.photoset_row').each(function() {
 
 			if (!$(this).hasClass('xkit-accesskit-viscaps')) { //prevents double-dipping
 
-				$(this).attr('style',$(this).attr('style').replace('height','min-height'));
+				$(this).attr('style', $(this).attr('style').replace('height', 'min-height'));
 				rowHeight = $(this).css('min-height');
 
-				$(this).find('a').each(function () {
+				$(this).find('a').each(function() {
 
 					if (!$(this).hasClass('xkit-accesskit-viscaps')) { //protection!
 
 						imgCap = $(this).find('img').attr('alt');
 						imgWidth = $(this).find('img').css('width');
-						$(this).html('<div style="height: '+rowHeight+'; overflow: hidden;">'+$(this).html()+'</div><p style="width: '+imgWidth+'; white-space: pre-wrap">'+imgCap+'</p>');
+						$(this).html('<div style="height: ' + rowHeight + '; overflow: hidden;">' + $(this).html() + '</div><p style="width: ' + imgWidth + '; white-space: pre-wrap">' + imgCap + '</p>');
 
 						$(this).addClass('xkit-accesskit-viscaps');
 

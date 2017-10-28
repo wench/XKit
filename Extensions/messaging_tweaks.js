@@ -1,5 +1,5 @@
 //* TITLE Messaging Tweaks **//
-//* VERSION 1.7.0 **//
+//* VERSION 1.8.0 **//
 //* DESCRIPTION Helpful tweaks for Tumblr IM **//
 //* DETAILS This adds a few helpful tweaks to the Tumblr IM, for example minimising the chat, hiding the IM icon or changing the looks of the chat window. **//
 //* DEVELOPER New-XKit **//
@@ -36,7 +36,12 @@ XKit.extensions.messaging_tweaks = new Object({
 			value: false
 		},
 		"hide_send_post": {
-			text: "Hide the send post paper plane on posts",
+			text: "Hide the send post through IM in the post share menu",
+			default: false,
+			value: false
+		},
+		"hide_online_indicators": {
+			text: "Hide online indicators from the messaging popout",
 			default: false,
 			value: false
 		},
@@ -113,25 +118,25 @@ XKit.extensions.messaging_tweaks = new Object({
 		"my_chat_bubble_background": {
 			text: "Background for my chat bubbles",
 			type: "text",
-			default: "rgba(0,0,0,.05)",
+			default: "",
 			value: "rgba(0,0,0,.05)"
 		},
 		"other_chat_bubble_background": {
 			text: "Background for other people's chat bubbles",
 			type: "text",
-			default: "rgba(0,0,0,.1)",
+			default: "",
 			value: "rgba(0,0,0,.1)"
 		},
 		"my_chat_bubble_text": {
 			text: "Text color for my chat bubbles",
 			type: "text",
-			default: "rgb(68,68,68)",
+			default: "",
 			value: "rgb(68,68,68)"
 		},
 		"other_chat_bubble_text": {
 			text: "Text color for other people's chat bubbles",
 			type: "text",
-			default: "rgb(68,68,68)",
+			default: "",
 			value: "rgb(68,68,68)"
 		},
 		"background_override": {
@@ -168,8 +173,9 @@ XKit.extensions.messaging_tweaks = new Object({
 	do_messages: function() {
 		XKit.extensions.messaging_tweaks.observer.disconnect();
 		var icons = $(".messaging-conversation-popovers .avatar:not(.xkit-my_messaging_icon, .xkit-others_messaging_icon)");
+
 		function img_onload(msg_div, emoji_text, emoji) {
-			msg_div.html(msg_div.html().replace(new RegExp(emoji_text, "g") , emoji.outerHTML));
+			msg_div.html(msg_div.html().replace(new RegExp(emoji_text, "g"), emoji.outerHTML));
 		}
 		icons.each(function() {
 			if ($(this).parents(".conversation-compose").length !== 0) { return; }
@@ -225,15 +231,15 @@ XKit.extensions.messaging_tweaks = new Object({
 			XKit.extensions.messaging_tweaks.first_chat_open = true;
 			XKit.extensions.messaging_tweaks.read_message_count = 0;
 			if (XKit.extensions.messaging_tweaks.preferences.allow_minimising.value) {
-				$(".messaging-conversation-popovers").animate({bottom: "0px"}, "fast");
+				$(".messaging-conversation-popovers").animate({ bottom: "0px" }, "fast");
 				$(".conversation-header-main").on("click.minimise_header", function(e) {
 					if (e.target !== this) { return; }
 					if (!$(this).hasClass("minimised")) {
-						$(".messaging-conversation-popovers").animate({bottom: "-404px"});
+						$(".messaging-conversation-popovers").animate({ bottom: "-404px" });
 						$(this).addClass("minimised");
 					} else {
 						document.title = "Tumblr";
-						$(".messaging-conversation-popovers").animate({bottom: "0px"});
+						$(".messaging-conversation-popovers").animate({ bottom: "0px" });
 						$(this).removeClass("minimised");
 					}
 				});
@@ -269,12 +275,12 @@ XKit.extensions.messaging_tweaks = new Object({
 		}
 
 		if ($(".conversation-main").get(0) !== null && typeof($(".conversation-main").get(0)) !== "undefined") {
-			XKit.extensions.messaging_tweaks.observer.observe($(".conversation-main").get(0), {subtree: true, childList: true});
+			XKit.extensions.messaging_tweaks.observer.observe($(".conversation-main").get(0), { subtree: true, childList: true });
 		}
 	},
 
 	hook_chat_window: function() {
-		XKit.extensions.messaging_tweaks.observer.observe($(".conversation-main").get(0), {subtree: true, childList: true});
+		XKit.extensions.messaging_tweaks.observer.observe($(".conversation-main").get(0), { subtree: true, childList: true });
 		XKit.extensions.messaging_tweaks.read_message_count = $(".xkit-others_messaging_icon").length;
 	},
 
@@ -287,11 +293,11 @@ XKit.extensions.messaging_tweaks = new Object({
 			$(document).on("keydown.minimise_header", function(e) {
 				if (!e.altKey) { return; }
 				if (e.which === 40) {
-					$(".messaging-conversation-popovers").animate({bottom: "-404px"});
+					$(".messaging-conversation-popovers").animate({ bottom: "-404px" });
 					$(this).addClass("minimised");
 				} else if (e.which === 38) {
 					document.title = "Tumblr";
-					$(".messaging-conversation-popovers").animate({bottom: "0px"});
+					$(".messaging-conversation-popovers").animate({ bottom: "0px" });
 					$(this).removeClass("minimised");
 				}
 			});
@@ -309,7 +315,7 @@ XKit.extensions.messaging_tweaks = new Object({
 		}
 		XKit.extensions.messaging_tweaks.observer = new MutationObserver(XKit.extensions.messaging_tweaks.do_messages);
 		XKit.extensions.messaging_tweaks.chat_window_observer = new MutationObserver(function(mutations, observer) {
-			mutations.forEach(function (mutation) {
+			mutations.forEach(function(mutation) {
 				var i, node;
 				// Check if Chat Window has been added
 				if (mutation.addedNodes.length) {
@@ -320,7 +326,7 @@ XKit.extensions.messaging_tweaks = new Object({
 							return;
 						}
 					}
-				// Check if chat window has been removed
+					// Check if chat window has been removed
 				} else if (mutation.removedNodes.length) {
 					for (i = 0; i < mutation.removedNodes.length; i++) {
 						node = $(mutation.removedNodes[i]);
@@ -364,7 +370,10 @@ XKit.extensions.messaging_tweaks = new Object({
 			XKit.tools.add_css(".conversation-message-text .message-bubble-header a {display:none;}", "messaging_tweaks");
 		}
 		if (XKit.extensions.messaging_tweaks.preferences.hide_send_post.value) {
-			XKit.tools.add_css(".post_control.messaging {display:none;}", "messaging_tweaks");
+			XKit.tools.add_css(".messaging-share-post-search, .messaging-share-post-main {display:none;}", "messaging_tweaks");
+		}
+		if (XKit.extensions.messaging_tweaks.preferences.hide_online_indicators.value) {
+			XKit.tools.add_css(".status-indicator-wrapper, .chat-status-banner {display:none;}", "messaging_tweaks");
 		}
 		if (XKit.extensions.messaging_tweaks.preferences.make_icons_round.value) {
 			XKit.tools.add_css(".avatar > img { border-radius: 30px !important; transition: border-radius 0.5s; }", "messaging_tweaks");
@@ -373,14 +382,20 @@ XKit.extensions.messaging_tweaks = new Object({
 			}
 		}
 
-		XKit.tools.add_css(".messaging-conversation .xkit-others_messaging_message .conversation-message-text .message-bubble { background-color: " + XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_background.value + " !important; }", "messaging_tweaks");
-		XKit.tools.add_css(".messaging-conversation .xkit-my_messaging_message .conversation-message-text .message-bubble { background-color: " + XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_background.value + " !important; }", "messaging_tweaks");
-
-		XKit.tools.add_css(".messaging-conversation .xkit-others_messaging_message .conversation-message-text .message-bubble { color: " + XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_text.value + " !important; }", "messaging_tweaks");
-		XKit.tools.add_css(".messaging-conversation .xkit-my_messaging_message .conversation-message-text .message-bubble { color: " + XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_text.value + " !important; }", "messaging_tweaks");
-
-		XKit.tools.add_css(".messaging-conversation .xkit-others_messaging_message .conversation-message-text .message-bubble-header a { color: " + XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_text.value + " !important; }", "messaging_tweaks");
-		XKit.tools.add_css(".messaging-conversation .xkit-my_messaging_message .conversation-message-text .message-bubble-header a { color: " + XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_text.value + " !important; }", "messaging_tweaks");
+		if (XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_background.value) {
+			XKit.tools.add_css(".messaging-conversation .xkit-others_messaging_message .conversation-message-text .message-bubble { background-color: " + XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_background.value + " !important; }", "messaging_tweaks");
+		}
+		if (XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_background.value) {
+			XKit.tools.add_css(".messaging-conversation .xkit-my_messaging_message .conversation-message-text .message-bubble { background-color: " + XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_background.value + " !important; }", "messaging_tweaks");
+		}
+		if (XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_text.value) {
+			XKit.tools.add_css(".messaging-conversation .xkit-others_messaging_message .conversation-message-text .message-bubble { color: " + XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_text.value + " !important; }", "messaging_tweaks");
+			XKit.tools.add_css(".messaging-conversation .xkit-others_messaging_message .conversation-message-text .message-bubble-header a { color: " + XKit.extensions.messaging_tweaks.preferences.other_chat_bubble_text.value + " !important; }", "messaging_tweaks");
+		}
+		if (XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_text.value) {
+			XKit.tools.add_css(".messaging-conversation .xkit-my_messaging_message .conversation-message-text .message-bubble { color: " + XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_text.value + " !important; }", "messaging_tweaks");
+			XKit.tools.add_css(".messaging-conversation .xkit-my_messaging_message .conversation-message-text .message-bubble-header a { color: " + XKit.extensions.messaging_tweaks.preferences.my_chat_bubble_text.value + " !important; }", "messaging_tweaks");
+		}
 
 		// There's either 1 or no messaging-conversation-popovers on extension start
 		$(".messaging-conversation-popovers").each(function() {
@@ -425,7 +440,7 @@ XKit.extensions.messaging_tweaks = new Object({
 		$(".xkit-my_messaging_icon").removeClass("xkit-my_messaging_icon");
 		XKit.tools.remove_css("messaging_tweaks");
 		if ($(".conversation-header-main").hasClass("minimised")) {
-			$(".messaging-conversation-popovers").animate({bottom: "0px"});
+			$(".messaging-conversation-popovers").animate({ bottom: "0px" });
 			$(".conversation-header-main").removeClass("minimised");
 		}
 		$(".conversation-header-main").off("click.minimise_header");
@@ -433,7 +448,7 @@ XKit.extensions.messaging_tweaks = new Object({
 		this.running = false;
 	},
 
-	cpanel: function (cp) {
+	cpanel: function(cp) {
 		function update() {
 			if (round_icons_setting.hasClass("selected")) {
 				rectangle_icons_setting.show();
