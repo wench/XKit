@@ -22,16 +22,6 @@ var bridge_error_object;
 var xkit_storage = {};
 var bridge_ver = "2.1";
 
-// If chrome isn't defined, check for browser or msBrowser and use those instead. 
-if (typeof chrome === 'undefined') {
-	// Probably ms edge
-	if (typeof msBrowser !== 'undefined') {
-		chrome = msBrowser; // jshint ignore:line
-	} else if (typeof browser !== 'undefined') {
-		chrome = browser;	// jshint ignore:line
-	}
-}
-
 try {
 	var storage = browser.storage.local;
 	var storage_loaded = false;

@@ -132,7 +132,7 @@ gulp.task('copy:edge', ['clean:edge', 'lint'], function() {
 		paths.scripts.core,
 		paths.css.core,
 		paths.vendor,
-		['Chrome/bridge.js', 'Chrome/icon.png', 'Edge/**/*']
+		['WebExtension/bridge.js', 'WebExtension/icon.png', 'Edge/**/*']
 	);
 
 	return gulp.src(src)
