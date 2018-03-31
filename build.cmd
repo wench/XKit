@@ -1,0 +1,1 @@
+gulp build:edge && robocopy /E "build\edge" "D:\Users\Colourless\OneDrive\Stuff\xkit-edge" /NJH /NFL /NDL /NJS

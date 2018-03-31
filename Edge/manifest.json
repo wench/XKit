@@ -1,22 +1,44 @@
 {
-   "content_scripts": [ {
+  "content_scripts": [ 
+    {
       "all_frames": true,
-			"run_at": "document_end",
+      "run_at": "document_end",
       "css": [ "xkit.css" ],
-      "exclude_matches": [ "https://www.tumblr.com/upload/image*, http://www.tumblr.com/upload/image*" ],
-      "js": [ "bridge.js", "jquery.js", "tiptip.js", "moment.js", "nano.js", "xkit.js" ],
-      "matches": [ "http://*.tumblr.com/*", "https://*.tumblr.com/*" ]
-   } ],
-   "description": "A fork of XKit, the extension framework for Tumblr.",
-   "homepage_url": "https://github.com/new-xkit/XKit",
-   "author": "New XKit",
-   "icons": {
-      "128": "icon.png"
-   },
-   "manifest_version": 2,
-   "minimum_edge_version": "34.14291.1001.0",	 
-   "name": "New XKit",
-   "permissions": ["*://*/*", "*://*/", "unlimitedStorage", "storage", "http://*.tumblr.com/", "https://*.tumblr.com/" ],
-   "version": "7.7.1",
-   "web_accessible_resources": [ "manifest.json", "editor.js" ]
+      "exclude_matches": [
+        "*://*.tumblr.com/*/audio_player_iframe/*",
+        "*://*.tumblr.com/*/photoset_iframe/*",
+        "*://assets.tumblr.com/*",
+        "*://*.media.tumblr.com/*",
+        "*://www.tumblr.com/upload/image*",
+        "*://www.tumblr.com/video/*"
+      ],
+      "js": [ "fixaddressbar.js", "bridge.js", "lodash.min.js", "jquery.js", "tiptip.js", "moment.js", "nano.js", "xkit.js" ],
+      "matches": [ "*://*.tumblr.com/*" ]
+    }
+  ],
+  "description": "A fork of XKit, the extension framework for Tumblr.",
+  "homepage_url": "https://github.com/new-xkit/XKit",
+  "icons": {
+    "128": "icon.png",
+    "32": "icon32.png",
+    "16": "icon16.png"
+  },
+  "manifest_version": 2,
+  "minimum_chrome_version": "44.0",
+  "minimum_edge_version": "34.14291.1001.0",	 
+  "name": "New XKit",
+  "author": "New XKit Team",
+  "permissions": ["*://*/*", "*://*/", "unlimitedStorage", "storage", "http://*.tumblr.com/", "https://*.tumblr.com/",  "webRequest",  "webRequestBlocking", "contextMenus", "activeTab" ],
+  "version": "7.8.1",
+  "web_accessible_resources": [ "manifest.json", "editor.js", "extensions/*", "gifplaceholder.gif" ],
+  "applications": {
+    "gecko": {
+      "id": "@new-xkit",
+      "update_url": "https://new-xkit.github.io/XKit/Extensions/dist/page/FirefoxUpdate.json"
+    }
+  },
+  "background": {
+    "scripts": ["gifredirect.js"],
+    "persistent": true    
+  }  
 }
