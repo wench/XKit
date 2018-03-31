@@ -8,6 +8,9 @@ xhr.send(null);
 eval(xhr.responseText + "\n//# sourceURL=" + url);
 */
 
+/*global browser*/
+/*global extension_id*/
+
 ((extension_id) => {
 	let updateField = (field, data) => {
 		let extension = XKit.installed.get(extension_id);
@@ -28,7 +31,7 @@ eval(xhr.responseText + "\n//# sourceURL=" + url);
 	xhr.open('GET', url, false);
 	xhr.send(null);
 	if (xhr.responseText) {
-		let extension = XKit.installed.get(extension_id);
+		XKit.installed.get(extension_id);
 		updateField('css', xhr.responseText);
 	}
 
@@ -40,8 +43,8 @@ eval(xhr.responseText + "\n//# sourceURL=" + url);
 		let reader = new FileReader();
 		reader.onload = () => {
 			updateField('icon', reader.result);
-		}
+		};
 		reader.readAsDataURL(e.target.response);
-	}
+	};
 	xhr.send(null);
 })(extension_id);

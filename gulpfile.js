@@ -69,7 +69,8 @@ gulp.task('lint:scripts', function() {
 		paths.scripts.core,
 		paths.scripts.extensions,
 		['WebExtension/**/*.js',
-		 'Safari/**/*.js']
+		 'Safari/**/*.js',
+		 'wench/**/*.js']
 	);
 
 	return gulp.src(src)
