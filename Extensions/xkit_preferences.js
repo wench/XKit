@@ -1,5 +1,5 @@
 //* TITLE XKit Preferences **//
-//* VERSION 7.4.4 **//
+//* VERSION 7.4.7 **//
 //* DESCRIPTION Lets you customize XKit **//
 //* DEVELOPER new-xkit **//
 
@@ -722,6 +722,7 @@ XKit.extensions.xkit_preferences = new Object({
 			$("#xkit-cp-tab-news").trigger('click');
 		}
 
+		$(document).on('keydown', XKit.extensions.xkit_preferences.on_modal_keydown);
 	},
 
 	close: function() {
@@ -738,8 +739,15 @@ XKit.extensions.xkit_preferences = new Object({
 			$(window).scrollTop(XKit.extensions.xkit_preferences.scroll_pos);
 		}
 
+		$(document).off('keydown', XKit.extensions.xkit_preferences.on_modal_keydown);
 	},
 
+	on_modal_keydown: function(event) {
+		// Handle esc key to close preferences modal
+		if (event.keyCode == 27) {
+			XKit.extensions.xkit_preferences.close();
+		}
+	},
 
 	show_news: function() {
 
@@ -782,7 +790,6 @@ XKit.extensions.xkit_preferences = new Object({
 		});
 
 	},
-
 
 	show_get: function() {
 
@@ -1266,33 +1273,21 @@ XKit.extensions.xkit_preferences = new Object({
 
 			m_html = m_html + '<div id="xkit-extension-panel-no-settings">No settings available for this extension.</div>';
 
+		} else if (XKit.installed.enabled(extension_id) === false) {
+
+			m_html = m_html + '<div id="xkit-extension-panel-no-settings">Please enable this extension to customize it.</div>'; 
+			
+		} else if (typeof XKit.extensions[extension_id].preferences !== "undefined") {
+			
+			m_html = m_html + '<div id="xkit-extension-panel-settings">' + XKit.extensions.xkit_preferences.return_extension_settings(extension_id) + "</div>";
+				
 		} else {
-
-			// To-Do: Load Extension settings Here!
-			// Check if custom control panel:
-			if (typeof XKit.extensions[extension_id].cpanel === "undefined") {
-				// Yes it is.
-				m_html = m_html + '<div id="xkit-extension-panel-settings">' + XKit.extensions.xkit_preferences.return_extension_settings(extension_id) + "</div>";
-			} else {
-				// Check if it also has standard options:
-				if (XKit.installed.enabled(extension_id) === false) {
-
-					m_html = m_html + '<div id="xkit-extension-panel-no-settings">Please enable this extension to customize it.</div>';
-
-				} else {
-					if (typeof XKit.extensions[extension_id].preferences !== "undefined") {
-						m_html = m_html + '<div id="xkit-extension-panel-settings">' + XKit.extensions.xkit_preferences.return_extension_settings(extension_id) + "</div>";
-					} else {
-						m_html = m_html + '<div id="xkit-extension-panel-settings"><div style="padding: 10px">There is a problem loading the extension panel.<br/>Update the extension and again later.</div></div>';
-					}
-				}
-			}
+			
+			m_html = m_html + '<div id="xkit-extension-panel-settings"></div>';
 		}
-
 		$("#xkit-extensions-panel-right-inner").html(m_html);
-
 		// Pass control to the extension to draw custom control panel:
-		if (typeof XKit.extensions[extension_id].cpanel !== "undefined") {
+		if (typeof XKit.extensions[extension_id].cpanel !== "undefined" && XKit.installed.enabled(extension_id) !== false) {
 			// Call it:
 			XKit.extensions[extension_id].cpanel($("#xkit-extension-panel-settings"));
 		}
@@ -1414,7 +1409,7 @@ XKit.extensions.xkit_preferences = new Object({
 			var m_ext = XKit.installed.get(XKit.extensions.xkit_preferences.current_open_extension_panel);
 
 			XKit.window.show("Uninstall " + m_ext.title + "?",
-				"This extension will be completely deleted from your computer." +
+				"This extension will be completely deleted from your computer. " +
 				"If you change your mind, you can re-download it from the extension gallery later.",
 				"question", '<div id="xkit-extension-yes-uninstall" class="xkit-button default">Yes, uninstall</div>' +
 				'<div id="xkit-close-message" class="xkit-button">Cancel</div>');
@@ -2222,7 +2217,6 @@ XKit.extensions.xkit_preferences = new Object({
 		});
 
 	},
-
 
 	show_others_panel_flags: function() {
 
