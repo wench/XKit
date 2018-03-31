@@ -1,0 +1,38 @@
+#xkit-quick-tags-window {
+  width: 422px !important; 
+}
+#xkit-quick-tags-user-tags {
+  height: 315px !important;
+}
+#xkit-quick-tags-user-tags .content {
+  background: #c3c7cc !important; 
+}
+#xkit-quick-tags-user-tags .xkit-tag,
+#xkit-quick-tags-user-tags :last-child.xkit-tag {
+  width: 211px !important;
+  height: 45px !important;
+  display: inline-block !important;
+  border-right: 1px solid #abafbc !important;
+}
+
+.post_full.is_photoset .photoset .photoset_row, .post_full.is_photo .photoset .photoset_row {
+  margin-top: 0 !important;
+	text-align: center !important;
+	background: black !important;
+}
+
+.post_full.is_photoset .photoset .photoset_row .photoset_photo {
+	margin-left: 0 !important;
+	background: #36465d !important;
+}
+
+#x1cpostage_quick_tags {
+   max-height: 195px !important;
+}
+
+img[src*="media.tumblr.com"][src$=".gif"]:not([src*=avatar]),
+img[src*="media.tumblr.com"][src$=".gifv"]:not([src*=avatar]) {
+  min-width: 50px;
+  min-height: 50px;
+  background: #0000007f;
+}

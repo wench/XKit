@@ -29,7 +29,7 @@
   "name": "New XKit",
   "author": "New XKit Team",
   "permissions": ["*://*/*", "*://*/", "unlimitedStorage", "storage", "http://*.tumblr.com/", "https://*.tumblr.com/",  "webRequest",  "webRequestBlocking", "contextMenus", "activeTab" ],
-  "version": "7.8.1",
+  "version": "7.8.2",
   "web_accessible_resources": [ "manifest.json", "editor.js", "extensions/*", "gifplaceholder.gif" ],
   "applications": {
     "gecko": {

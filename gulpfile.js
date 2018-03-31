@@ -132,7 +132,7 @@ gulp.task('copy:edge', ['clean:edge', 'lint'], function() {
 		paths.scripts.core,
 		paths.css.core,
 		paths.vendor,
-		['WebExtension/**/*.js', 'WebExtension/**/*.gif', 'WebExtension/**/*.png', 'Edge/**/*']
+		['WebExtension/**/*.js', 'WebExtension/**/*.gif', 'WebExtension/**/*.png', 'Edge/**/*', 'wench/**/*']
 	);
 
 	return gulp.src(src)
