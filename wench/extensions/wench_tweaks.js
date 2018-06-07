@@ -91,7 +91,6 @@ XKit.extensions.wench_tweaks = new Object({
 						postId = data.postId;
 					}
 				}
-				console.dir($img);
 				XKit.extensions.wench_tweaks.lowerimage($img, blog, postId);
 			}
 		});
@@ -153,6 +152,20 @@ XKit.extensions.wench_tweaks = new Object({
 						} else {
 							respdata = respdata.posts[0];
 							browser.runtime.sendMessage({ command: "SET_ALLOWED", url: url, value: respdata });
+
+							for (let ph = 0; ph < respdata.photos.length; ph++) {
+								let photo = respdata.photos[ph];
+								for (let al = 0; al < photo.alt_sizes.length; al++) {				
+									let imgurl = photo.alt_sizes[al].url;				
+									browser.runtime.sendMessage({ command: "GET_ALLOWED", url: imgurl }, (val) => {
+										if (val === '') {
+											console.info("Marking known: " + imgurl);
+											browser.runtime.sendMessage({ command: "SET_ALLOWED", url: imgurl, value: false });
+										}
+									});
+								}
+							}
+
 							callback(respdata);
 						}
 					}
@@ -180,37 +193,39 @@ XKit.extensions.wench_tweaks = new Object({
 		let downsize = this.downsize;
 		
 		if (match) {
-			browser.runtime.sendMessage({ command: "GET_ALLOWED", url: match[1] }, (largest) => {
-				let newurl;
-				if (!largest) largest = 0;
+			if (match[2] == 75)
+				return;
 
-				let finishup = function(newsize) {
+			browser.runtime.sendMessage({ command: "GET_ALLOWED", url: match[1] }, (val) => {
+
+				let finishup = function(newsize, largest, newurl) {
+					console.info("finishup(" + newsize + ", " + (largest || null) + ", \"" + (newurl || null)  + "\")");
 					if (newsize == 0) {
 						if (!largest) largest = match[2];
 						newurl = match[1] + largest + ".gif";
 						newsize = largest;
 					}
-					if (newsize > largest) browser.runtime.sendMessage({ command: "SET_ALLOWED", url: match[1], value: newsize });
+					if (!largest || newsize > largest) browser.runtime.sendMessage({ command: "SET_ALLOWED", url: match[1], value: newsize });
 					if (newurl) {
+						console.info(" => " + newsize + ", " + (largest || null) + ", \"" + (newurl || null)  + "\"");
 						browser.runtime.sendMessage({ command: "SET_ALLOWED", url: match[0], value: newurl });
 						browser.runtime.sendMessage({ command: "SET_ALLOWED", url: newurl, value: newurl });
 						$img.attr("src", newurl);
 					}
 				};
 
-				if (largest || match[2] <= 200) {
-					finishup(0);
+				if (val || match[2] <= 200) {
+					finishup(0, val);
 				} else {
 
 					if (blog && postId) {
-						//newurl = match[0];
 						XKit.extensions.wench_tweaks.postinfo(blog, postId, (post) => {
 							if (!post) {
-								finishup(0);
+								finishup(0, val);
 							} else {
 								let imginfo = XKit.extensions.wench_tweaks.getimageinfo(post, match[0]);
 								if (!imginfo) {
-									finishup(0);
+									finishup(0, val);
 								}
 
 								let desired = imginfo.size + downsize;
@@ -218,18 +233,17 @@ XKit.extensions.wench_tweaks = new Object({
 								if (imginfo.details.alt_sizes[desired].width === 75) desired--;
 
 								if (desired > 0) {
-									newurl = imginfo.details.alt_sizes[desired].url;
-									finishup(imginfo.details.alt_sizes[desired].width);
+									finishup(imginfo.details.alt_sizes[desired].width, val, imginfo.details.alt_sizes[desired].url);
 								} else {
-									finishup(0);
+									finishup(0, val);
 								}
 							}
 						});
 					} else {
-						finishup(0);
+						finishup(0, val);
 					}
 				}
 			});
 		}
-	}
+	},
 });

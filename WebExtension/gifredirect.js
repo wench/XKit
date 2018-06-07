@@ -49,25 +49,32 @@ browser.contextMenus.create({
 			// Find the largest match we know about...
 			let largest;
 			for (let i = 1280; i >= 200; i -= 10) {
-				if (allowed[match[1] + i + ".gif"]) {
-					if (!largest) largest = i;
-					allowed[match[1] + i + ".gif"] = largest;
+				let key = match[1] + i + ".gif";
+				if (key in allowed) {
+					if (!largest) {
+						largest = i;
+						newurl = allowed[match[0]] = match[1] + largest + ".gif";
+					}
+					allowed[key] = newurl;
 				}
 			}
 			
-			allowed[match[0]] = largest;
-			newurl = allowed[match[0]] = match[1] + largest + ".gif";
-			
+			if (!newurl) 
+				return;
+	
+			allowed[match[1]] = largest;
+				
 			let func = function(src, to) {
 				for (let i = 0; i < document.images.length; i++) {
 					let image = document.images[i];
-					if (image.src === src) {
+					if (image.src.startsWith(src)) {
+						console.info("Load fullsize: " + image.src + " => " + to);
 						image.src = to + "?";
 					}
 				}
 			};
 
-			let script = "(" + func.toString() + ")(" + JSON.stringify(url) + "," + JSON.stringify(newurl) + ");";
+			let script = "(" + func.toString() + ")(" + JSON.stringify(match[0]) + "," + JSON.stringify(newurl) + ");";
 
 			browser.tabs.executeScript(tab.id, {
 				allFrames: true,
@@ -81,7 +88,8 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse)=>{
 	switch (message.command || '')	{
 
 	case "GET_ALLOWED": 
-		sendResponse(allowed[message.url] || '');
+		if (message.url in allowed) sendResponse(allowed[message.url]);
+		else sendResponse('');
 		break;
 
 	case "SET_ALLOWED": 
